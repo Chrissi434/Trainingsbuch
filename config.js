@@ -3,6 +3,6 @@
 // Der "publishable"/"anon" key ist öffentlich gedacht – er gibt keinen Zugriff
 // auf Daten, nur auf die Login-Funktionen aus supabase.sql.
 window.TB_CONFIG = {
-  supabaseUrl: "",   // z. B. "https://abcdefgh.supabase.co"
-  supabaseKey: ""    // z. B. "sb_publishable_..." oder "eyJhbGciOi..."
+  supabaseUrl: "https://icstdpxtqswmsevuztwm.supabase.co",   // z. B. "https://abcdefgh.supabase.co"
+  supabaseKey: "sb_publishable_kSwRQ-LdjUYFPjTdGpdI-A_LIOlBYeu"    // z. B. "sb_publishable_..." oder "eyJhbGciOi..."
 };
