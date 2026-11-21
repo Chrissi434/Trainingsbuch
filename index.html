@@ -72,7 +72,7 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;str
 .list{list-style:none;margin:0;padding:0}
 .list li{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
 .list li:last-child{border-bottom:0}
-.linkish{background:none;border:0;padding:0;min-height:0;font:inherit;font-weight:600;text-align:left;white-space:normal;color:inherit;justify-content:flex-start}
+.linkish,button.linkish.sm{background:none;border:0;padding:0;min-height:0;font:inherit;font-weight:600;text-align:left;white-space:normal;color:inherit;justify-content:flex-start}
 .tag{font-size:12.5px;font-weight:600;padding:1px 6px;border-radius:3px;background:var(--soft);color:var(--mut);white-space:nowrap;vertical-align:1px}
 .tag.live{background:var(--red);color:#fff}
 .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mut);justify-content:center}
@@ -126,6 +126,8 @@ svg.i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.75;str
 .steps{padding-left:20px;margin:6px 0}.steps li{margin:4px 0}
 .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-marker{display:none}
+.timer{font:700 40px/1 'Barlow Condensed',sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}.timer.done{color:var(--grn)}
+.check{display:flex;gap:12px;align-items:flex-start;cursor:pointer;padding:12px 0}.check input{width:24px;height:24px;min-height:0;accent-color:var(--grn);margin:2px 0 0;flex:none}
 .empty{text-align:center;padding:30px 10px}
 @media(max-width:600px){h1{font-size:34px}.hero h2{font-size:30px}}
 @media(prefers-reduced-motion:reduce){.m{transition:none}}
