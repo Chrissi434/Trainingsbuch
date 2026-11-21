@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#151515">
+<title>Trainingsbuch</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="config.js"></script>
+<style>
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/barlow-latin-ext-400-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/barlow-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/barlow-latin-ext-500-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/barlow-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-latin-ext-600-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Barlow';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-latin-ext-600-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-latin-600-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-latin-ext-700-normal.woff2) format('woff2');unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:'Barlow Condensed';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/barlow-condensed-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+/* VOICE: sachlich und motivierend, wie ein gut geführtes Trainingsbuch
+   IDEA: Hantelscheiben – die Farben der Olympia-Scheiben codieren die Belastung
+   PICTURE: anatomische Figur vorne/hinten, antippbar und nach Belastung eingefärbt
+   COLOUR and TYPE: Kreideweiß / Gummiboden-Schwarz, Scheibenrot, -blau, -grün, -gelb; Barlow Condensed + Barlow
+   LAYOUT: eine App-Spalte bis 760px, untere Tab-Leiste, ruhige Karten */
+:root{color-scheme:light dark;--bg:light-dark(#f6f5f2,#111213);--card:light-dark(#fff,#1b1c1e);--ink:light-dark(#151515,#f1f0ec);--mut:light-dark(#66635d,#a3a09a);--line:light-dark(#e3e0da,#2e2f32);--m0:light-dark(#d6d2cb,#3c3d41);--sil:light-dark(#ebe8e3,#26272a);--soft:light-dark(#f0eee9,#242528);--red:#d7263d;--blue:#1b6ef3;--grn:#1f9d55;--yel:#f2b705}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:72px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Barlow,system-ui,sans-serif;overflow-x:clip;padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+h1,h2,h3{font-family:'Barlow Condensed',Barlow,sans-serif;line-height:1.05;margin:0;text-wrap:balance;font-weight:700}
+h1{font-size:36px}h2{font-size:25px}h3{font-size:20px}
+p{margin:6px 0}
+a{color:inherit}
+header.top{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;align-items:center;gap:10px;padding:8px max(4vw,14px);border-bottom:1px solid var(--line)}
+.brand{font:700 23px 'Barlow Condensed',sans-serif;display:flex;align-items:center;gap:8px;text-decoration:none}
+.sync{margin-left:auto;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--mut)}
+.dot.ok{background:var(--grn)}.dot.warn{background:var(--yel)}.dot.err{background:var(--red)}
+main{max-width:760px;margin:0 auto;padding:18px max(4vw,14px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between}.grow{flex:1}
+.mut{color:var(--mut)}.sm{font-size:14px}
+button,.btn{font:600 16px Barlow,sans-serif;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;white-space:nowrap}
+.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.red{background:var(--red);border-color:var(--red);color:#fff}
+.ghost{background:transparent;border-color:transparent}
+.ico{width:44px;padding:0}
+.wide{width:100%}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.opt input:focus-visible+span{outline:3px solid var(--blue);outline-offset:2px}
+input,select,textarea{font:16px Barlow,sans-serif;min-height:44px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+textarea{min-height:110px}
+label.f{display:block;font-weight:600;margin:14px 0 6px}
+fieldset{border:0;padding:0;margin:16px 0 0}legend{font-weight:600;margin-bottom:8px;padding:0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip,.opt span{min-height:40px;padding:0 13px;border-radius:999px;font:500 15px Barlow,sans-serif;border:1px solid var(--line);background:var(--card);display:inline-flex;align-items:center;cursor:pointer}
+.chip.on,.opt input:checked+span{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.opt{position:relative}.opt input{position:absolute;opacity:0;width:1px;height:1px}
+.figs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.fig2{text-align:center}
+.body{width:100%;max-height:430px;display:block}
+.mini .body{max-height:220px}
+.sil{fill:var(--sil)}
+.m{cursor:pointer;transition:fill .25s;stroke:var(--card);stroke-width:1.2}
+.pick .m:hover{opacity:.75}
+nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:6;background:var(--card);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs a{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 10px;color:var(--mut);text-decoration:none;font-size:13px;font-weight:600}
+nav.tabs a.on{color:var(--red)}
+svg.i{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.list li:last-child{border-bottom:0}
+.linkish{background:none;border:0;padding:0;min-height:0;font:inherit;font-weight:600;text-align:left;white-space:normal;color:inherit;justify-content:flex-start}
+.tag{font-size:13px;padding:2px 9px;border-radius:999px;background:var(--soft);color:var(--mut);white-space:nowrap}
+.tag.live{background:var(--red);color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--mut);justify-content:center}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font:700 30px/1.1 'Barlow Condensed',sans-serif;white-space:nowrap}
+.stat span{font-size:13px;color:var(--mut)}
+.bars{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;align-items:end;height:130px;margin-top:10px}
+.bar{display:flex;flex-direction:column-reverse;height:100%}
+.bar div{min-height:0}.bar .g{background:var(--red)}.bar .s{background:var(--blue)}
+.bl{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;font-size:13px;color:var(--mut);text-align:center}
+.meter{height:8px;border-radius:4px;background:var(--soft);overflow:hidden;margin-top:4px}.meter div{height:100%}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.wd .c{width:36px;height:36px;border-radius:50%;margin:4px auto 0;display:grid;place-items:center;border:2px solid var(--line);font-weight:600;font-size:15px}
+.wd .c.g{background:var(--red);border-color:var(--red);color:#fff}.wd .c.s{background:var(--blue);border-color:var(--blue);color:#fff}.wd .c.p{border-style:dashed;border-color:var(--mut)}
+.wd.now span{color:var(--ink);font-weight:700}
+.hero h2{font-size:32px;margin:4px 0}
+.seg{display:flex;background:var(--soft);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;min-height:40px;padding:0 6px}
+.seg button.on{background:var(--card);box-shadow:0 1px 2px #0002}
+.setrow{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) 46px;gap:8px;align-items:center;margin-top:6px}
+.setrow input{text-align:right}
+.setrow .n{font-weight:600;color:var(--mut);text-align:center}
+.ok{width:46px;padding:0}.ok.on{background:var(--grn);color:#fff;border-color:var(--grn)}
+.sethead{font-size:13px;color:var(--mut);margin-top:10px}
+.restbar{position:fixed;left:0;right:0;bottom:calc(74px + env(safe-area-inset-bottom));z-index:7;display:flex;justify-content:center;pointer-events:none}
+.restbar>div{pointer-events:auto;background:var(--ink);color:var(--bg);border-radius:999px;padding:4px 6px 4px 18px;display:flex;align-items:center;gap:8px;font-weight:600;box-shadow:0 4px 18px #0004}
+.restbar button{min-height:38px;background:transparent;color:var(--bg);border-color:#fff4;padding:0 10px}
+.ov{position:fixed;inset:0;z-index:20;background:#0008;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);width:100%;max-width:680px;max-height:90vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px max(4vw,16px) calc(22px + env(safe-area-inset-bottom))}
+@media(min-width:700px){.ov{align-items:center}.sheet{border-radius:18px}}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom));z-index:30;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;max-width:90vw}
+.chart{position:relative;height:230px;margin-top:8px}.chart>svg{position:absolute;inset:0;width:100%;height:100%}
+.chart text{font:13px Barlow,sans-serif;fill:var(--mut)}
+.note{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:15px}
+.steps{padding-left:20px;margin:6px 0}.steps li{margin:4px 0}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+details>summary{list-style:none;cursor:pointer}details>summary::-webkit-details-marker{display:none}
+.empty{text-align:center;padding:28px 10px}
+@media(max-width:600px){h1{font-size:32px}.hero h2{font-size:28px}}
+@media(prefers-reduced-motion:reduce){.m{transition:none}}
+</style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#heute"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="var(--red)"/><circle cx="12" cy="12" r="6.5" fill="none" stroke="#fff" stroke-width="1.5" opacity=".6"/><circle cx="12" cy="12" r="2.4" fill="#fff"/></svg>Trainingsbuch</a>
+  <span class="sync" id="sync"><span class="dot"></span><span>Startet …</span></span>
+  <a class="btn ghost ico" href="#daten" aria-label="Daten und Backup"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></a>
+</header>
+<main id="main"><p class="mut">Lädt …</p></main>
+<div id="restbar"></div>
+<nav class="tabs" aria-label="Hauptnavigation">
+  <a href="#heute" data-v="heute"><svg class="i" viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Heute</a>
+  <a href="#plaene" data-v="plaene"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="17" rx="2"/><path d="M8 2v4M16 2v4M8 11h8M8 15h5"/></svg>Pläne</a>
+  <a href="#training" data-v="training"><svg class="i" viewBox="0 0 24 24"><path d="M6 6v12M3 9v6M18 6v12M21 9v6M6 12h12"/></svg>Training</a>
+  <a href="#fortschritt" data-v="fortschritt"><svg class="i" viewBox="0 0 24 24"><path d="M3 20h18M6 16v-4M11 16V8M16 16v-6M20 5l-5 4-4-2-5 4"/></svg>Fortschritt</a>
+  <a href="#uebungen" data-v="uebungen"><svg class="i" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2zM4 19V5M9 8h7M9 12h5"/></svg>Übungen</a>
+</nav>
+<script src="app.js"></script>
+</body>
+</html>
