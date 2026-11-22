@@ -134,17 +134,28 @@ const num=n=>(Math.round(n*10)/10).toLocaleString('de-DE');
 const e1=s=>(+s.kg||0)*(1+(+s.r||0)/30);
 
 /* ================= Zustand & Speicher ================= */
-const DEF=()=>({v:1,mt:0,weekGoal:null,countSports:false,profile:null,plans:[],active:null,weights:{},custom:[],draft:null,del:[]});
+const DEF=()=>({v:1,mt:0,weekGoal:null,countSports:false,profile:null,plans:[],active:null,weights:{},custom:[],draft:null,del:[],likes:{}});
 let S=DEF(),LOGS={};
 let REV={mode:'m',y:new Date().getFullYear(),m:new Date().getMonth()};
 let VIEW='heute',SEL=new Set(),SUG=null,PERIOD=28,PROG=null,LQ='',LM='',LE='',OPEN=new Set(),REST=null,PICK=null,CF=null,CHART=null;
 const allEx=()=>EX.concat(S.custom||[]);
+const banned=id=>((S.likes||{})[id]?.dis||0)>=3;
+const likeOf=id=>(S.likes||{})[id]||null;
+const rateNeeded=id=>{const r=likeOf(id);return !r||r.v!=='like'||!r.at||daysAgo(r.at)>=60};
+function rate(id,v){S.likes=S.likes||{};const r=S.likes[id]||{dis:0};r.at=todayISO();if(v==='like'){r.v='like';r.dis=0}else{r.v='dislike';r.dis=(r.dis||0)+1}S.likes[id]=r}
+function likeScore(id){const r=likeOf(id);return !r?1:r.v==='like'?2:-(r.dis||0)}
+function pickAlt(id,plan,day){
+ const cur=exById(id),ok=x=>x.id!==id&&x.eq!=='cardio'&&!banned(x.id)&&!excluded(x.id,plan)&&(!plan.eq||!plan.eq.length||plan.eq.includes(x.eq))&&!day.items.some(i=>i.ex===x.id);
+ let c=allEx().filter(x=>ok(x)&&x.p[0]===cur.p[0]);if(!c.length)c=allEx().filter(x=>ok(x)&&x.p.some(m=>cur.p.includes(m)));
+ return c.map(x=>({x,sc:likeScore(x.id)+(x.eq===cur.eq?.5:0)+(!!x.c===!!cur.c?1:0)+Math.random()*.3})).sort((a,b)=>b.sc-a.sc)[0]?.x||null;
+}
+function replaceBanned(id){const out=[];for(const p of S.plans)for(const d of p.days)for(const it of d.items)if(it.ex===id){const alt=pickAlt(id,p,d);if(alt){it.ex=alt.id;out.push({from:id,to:alt.id,plan:p.name,day:d.name})}}return out}
 const exById=id=>allEx().find(x=>x.id===id)||{id,n:'Unbekannte Übung',eq:'frei',p:[],s:[]};
 const sessions=()=>Object.values(LOGS).flat().sort((a,b)=>b.date.localeCompare(a.date)||(b.t||0)-(a.t||0));
 const activePlan=()=>S.plans.find(p=>p.id===S.active)||null;
 const excluded=(id,a)=>(a&&a.limits||[]).some(l=>LIMITS[l]&&LIMITS[l].x.includes(id));
 
-const VERSION='1.4.0';
+const VERSION='1.5.0';
 function lsGet(){try{return JSON.parse(localStorage.getItem('trainingsbuch')||'null')}catch(e){return null}}
 function lsSet(){try{localStorage.setItem('trainingsbuch',JSON.stringify({S,LOGS}))}catch(e){toast('Speicher des Geräts voll – bitte Backup exportieren.')}}
 const SY={ok:['ok','Synchronisiert'],lokal:['','Auf diesem Gerät'],laden:['','Lädt …'],speichern:['','Synchronisiert …'],offline:['warn','Offline – wird später synchronisiert'],fehler:['err','Sync fehlgeschlagen']};
@@ -233,7 +244,7 @@ function genPlan(a){
  const lightGoal=a.level==='anf'||['fitness','abnehmen','gesund'].includes(a.goal);
  const split=n<=1?['GK_A']:n===2?['GK_A','GK_B']:n===3?(lightGoal?['GK_A','GK_B','GK_C']:['PUSH','PULL','LEGS']):n===4?['UPPER','LOWER','UPPER2','LOWER2']:n===5?['PUSH','PULL','LEGS','UPPER','LOWER']:['PUSH','PULL','LEGS','PUSH','PULL','LEGS'];
  const slots={45:5,60:6,75:7,90:8}[a.dur]||6,used={};
- const pool=allEx().filter(x=>x.eq!=='cardio'&&(!a.eq.length||a.eq.includes(x.eq))&&!excluded(x.id,a));
+ const pool=allEx().filter(x=>x.eq!=='cardio'&&!banned(x.id)&&(!a.eq.length||a.eq.includes(x.eq))&&!excluded(x.id,a));
  const score=(x,si)=>(si<3&&x.c?2:0)+(a.level==='anf'&&x.eq==='maschine'?1.2:0)+(a.level==='erf'&&x.eq==='frei'?.8:0)-(used[x.id]||0)*1.5+Math.random()*.6;
  const pDays=split.map((k,di)=>{
   const T=TPL[k];let ms=T.m.slice();
@@ -254,7 +265,7 @@ function genPlan(a){
 }
 function suggest(ms){
  const pr=S.profile||{},max=({45:5,60:6,75:7,90:8})[pr.dur]||6;
- const ex=allEx().filter(x=>x.eq!=='cardio'&&(!pr.eq||!pr.eq.length||pr.eq.includes(x.eq))&&!excluded(x.id,pr));
+ const ex=allEx().filter(x=>x.eq!=='cardio'&&!banned(x.id)&&(!pr.eq||!pr.eq.length||pr.eq.includes(x.eq))&&!excluded(x.id,pr));
  const recent=new Set();sessions().filter(s=>s.type==='gym'&&daysAgo(s.date)<3).forEach(s=>s.ex.forEach(e=>recent.add(e.id)));
  const per=Math.max(1,Math.min(3,Math.round(max/ms.length))),out=[];
  for(const m of ms){const want=Math.min(per,MUS.find(u=>u.id===m).t>=8?3:2);
@@ -342,7 +353,10 @@ function phaseCard(k){
 function phaseTick(){const d=S.draft;if(!d)return;for(const k of ['w','c']){const x=d[phKey(k)];if(!x||!x.start||x.done)continue;const left=phLeft(x),el=$('#t'+k),b=$('#b'+k);if(el)el.textContent=mmss(left);if(b)b.style.width=(100-left/(x.min*600))+'%';
  if(left<=0){x.acc=x.min*60000;x.start=null;x.done=true;persist('state');toast((k==='w'?'Warm-up':'Cool-down')+' geschafft');try{navigator.vibrate&&navigator.vibrate([300,120,300])}catch(e){}if(VIEW==='training'&&!document.querySelector('.ov'))render()}}}
 function phSave(x){if(!x||!x.id)return null;const min=Math.round((x.done?x.min*60000:x.acc+(x.start?Date.now()-x.start:0))/60000);return min>0||x.done?{id:x.id,min:Math.max(1,min)}:null}
-function finalModal(){const d=S.draft;modal(`${mhead('Training abschließen')}<form id="fin"><label class="check"><input type="checkbox" name="st" ${d.stretch?'checked':''}><span><b>Gedehnt</b><br><span class="sm mut">Hake an, wenn du nach dem Training gedehnt hast.</span></span></label><button class="red wide" style="margin-top:18px">Speichern</button></form>`)}
+function finalModal(){
+ const d=S.draft,ids=[...new Set(d.ex.filter(e=>e.sets.some(t=>t.done&&+t.r>0)).map(e=>e.id))].filter(id=>exById(id).eq!=='cardio'),ask=ids.filter(rateNeeded);
+ modal(`${mhead('Training abschließen')}<form id="fin">${ask.length?`<h3>Wie gefallen dir die Übungen?</h3><p class="sm mut" style="margin-bottom:6px">Nach dreimal „Mag ich nicht“ wird eine Übung durch eine gleichwertige ersetzt.</p><ul class="list">${ask.map(id=>{const r=likeOf(id),dis=r&&r.v==='dislike'?r.dis:0;return `<li style="flex-wrap:wrap"><div class="grow" style="min-width:150px"><b>${esc(exById(id).n)}</b>${dis?`<div class="sm mut">schon ${dis}× nicht gemocht</div>`:''}</div><div class="seg rate"><label class="opt"><input type="radio" name="rt_${esc(id)}" value="like"><span>Mag ich</span></label><label class="opt"><input type="radio" name="rt_${esc(id)}" value="dislike"><span>Mag ich nicht</span></label></div></li>`}).join('')}</ul>`:''}
+ <label class="check" style="margin-top:6px"><input type="checkbox" name="st" ${d.stretch?'checked':''}><span><b>Gedehnt</b><br><span class="sm mut">Hake an, wenn du nach dem Training gedehnt hast.</span></span></label><button class="red wide" style="margin-top:18px">Speichern</button></form>`)}
 function vTraining(){
  const d=S.draft;
  if(!d){const p=activePlan(),ss=sessions().slice(0,5);
@@ -466,7 +480,7 @@ function vUebungen(){
 }
 function libList(){
  const q=LQ.trim().toLowerCase(),xs=allEx().filter(x=>(!q||x.n.toLowerCase().includes(q))&&(!LM||x.p.includes(LM)||(x.s||[]).includes(LM))&&(!LE||x.eq===LE));
- return xs.length?xs.map(x=>`<li><div class="grow"><button class="linkish" data-act="info" data-id="${x.id}">${esc(x.n)}</button><div class="sm mut">${x.p.map(m=>MN[m]).join(', ')}</div></div><span class="tag">${EQ[x.eq]}</span>${S.weights[x.id]?`<b style="white-space:nowrap">${num(S.weights[x.id].kg)} kg</b>`:''}</li>`).join(''):'<li class="mut">Nichts gefunden.</li>';
+ return xs.length?xs.map(x=>`<li><div class="grow"><button class="linkish" data-act="info" data-id="${x.id}">${esc(x.n)}</button><div class="sm mut">${x.p.map(m=>MN[m]).join(', ')}</div></div>${banned(x.id)?'<span class="tag">aussortiert</span>':likeOf(x.id)?.v==='like'?'<span class="tag">mag ich</span>':''}<span class="tag">${EQ[x.eq]}</span>${S.weights[x.id]?`<b style="white-space:nowrap">${num(S.weights[x.id].kg)} kg</b>`:''}</li>`).join(''):'<li class="mut">Nichts gefunden.</li>';
 }
 function vDaten(){
  const has=!!(srvUrl()&&srvKey()),last=SC.last?new Date(SC.last).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'}):'noch nie';
@@ -503,7 +517,7 @@ function infoModal(id){
  modal(`${mhead(esc(x.n))}<span class="tag">${EQ[x.eq]}</span>${figs(m=>x.p.includes(m)?'var(--red)':(x.s||[]).includes(m)?'var(--yel)':'var(--m0)','mini')}
  <div class="legend"><span><i style="background:var(--red)"></i>Hauptmuskel: ${x.p.map(m=>MN[m]).join(', ')||'–'}</span>${(x.s||[]).length?`<span><i style="background:var(--yel)"></i>Mit: ${x.s.map(m=>MN[m]).join(', ')}</span>`:''}</div>
  ${x.set?`<h3 style="margin-top:16px">Einstellen</h3><p>${esc(x.set)}</p>`:''}${x.how?`<h3 style="margin-top:12px">Ausführung</h3><p>${esc(x.how)}</p>`:''}${x.tip?`<h3 style="margin-top:12px">Achte auf</h3><p>${esc(x.tip)}</p>`:''}
- <h3 style="margin-top:16px">Mein Gewicht</h3><form id="wf" data-id="${esc(id)}"><div class="g2"><label class="sm">kg<input type="number" step="0.5" min="0" inputmode="decimal" name="kg" value="${esc(w.kg??'')}"></label><label class="sm">Wdh.<input type="number" min="0" inputmode="numeric" name="r" value="${esc(w.r??'')}"></label></div><label class="sm" style="display:block;margin-top:8px">Notiz (z. B. Sitzhöhe 4, Lehne 2)<input name="note" value="${esc(w.note||'')}"></label><button class="pri" style="margin-top:10px">Speichern</button></form>
+ ${(()=>{const r=likeOf(id);if(!r)return '';return `<p class="sm" style="margin-top:14px">Bewertung: <b>${banned(id)?'aussortiert (3× nicht gemocht)':r.v==='like'?'mag ich':r.dis+'× nicht gemocht'}</b> <button class="ghost sm" data-act="resetLike" data-id="${esc(id)}">${banned(id)?'Wieder zulassen':'Zurücksetzen'}</button></p>`})()}<h3 style="margin-top:16px">Mein Gewicht</h3><form id="wf" data-id="${esc(id)}"><div class="g2"><label class="sm">kg<input type="number" step="0.5" min="0" inputmode="decimal" name="kg" value="${esc(w.kg??'')}"></label><label class="sm">Wdh.<input type="number" min="0" inputmode="numeric" name="r" value="${esc(w.r??'')}"></label></div><label class="sm" style="display:block;margin-top:8px">Notiz (z. B. Sitzhöhe 4, Lehne 2)<input name="note" value="${esc(w.note||'')}"></label><button class="pri" style="margin-top:10px">Speichern</button></form>
  ${hi.length?`<h3 style="margin-top:16px">Verlauf</h3><ul class="list">${hi.map(h=>`<li><span class="grow">${fmtD(h.date)}</span><span class="sm">${h.sets.map(s=>num(s.kg)+'×'+s.r).join(', ')}</span></li>`).join('')}</ul>`:''}
  <div class="row" style="margin-top:16px">${S.draft?`<button class="red" data-act="toDraft" data-id="${esc(id)}">Zum laufenden Training</button>`:`<button data-act="startWith" data-id="${esc(id)}">Training mit dieser Übung starten</button>`}${isC?`<button class="ghost" data-act="delCustom" data-id="${esc(id)}">Eigene Übung löschen</button>`:''}</div>`);
 }
@@ -553,7 +567,7 @@ const A={
  clearSel(){SEL.clear();SUG=null;render()},
  suggest(){SUG=suggest([...SEL]);render()},
  sugTog(t){const s=SUG[+t.dataset.i];s.on=!s.on;render()},
- sugSwap(t){const i=+t.dataset.i,cur=exById(SUG[i].id),pr=S.profile||{},alts=allEx().filter(x=>x.eq!=='cardio'&&x.p.some(m=>cur.p.includes(m))&&!SUG.some(s=>s.id===x.id)&&(!pr.eq||!pr.eq.length||pr.eq.includes(x.eq)));if(!alts.length)return toast('Keine Alternative gefunden');SUG[i].id=alts[Math.floor(Math.random()*alts.length)].id;render()},
+ sugSwap(t){const i=+t.dataset.i,cur=exById(SUG[i].id),pr=S.profile||{},alts=allEx().filter(x=>x.eq!=='cardio'&&!banned(x.id)&&x.p.some(m=>cur.p.includes(m))&&!SUG.some(s=>s.id===x.id)&&(!pr.eq||!pr.eq.length||pr.eq.includes(x.eq)));if(!alts.length)return toast('Keine Alternative gefunden');SUG[i].id=alts[Math.floor(Math.random()*alts.length)].id;render()},
  sugStart(){const pr=S.profile||{},g=GOALS[pr.goal]||GOALS.muskel,xs=SUG.filter(s=>s.on);if(!xs.length)return toast('Wähle mindestens eine Übung');
   startDraft([...SEL].map(m=>MN[m]).slice(0,3).join(', ')+([...SEL].length>3?' …':''),xs.map(s=>{const x=exById(s.id);return draftEx(s.id,x.c?g.cs:g.is,x.c?g.cr:g.ir,x.c?g.rest:Math.round(g.rest*.75))}));SUG=null;SEL.clear()},
  fillGaps(){const {R}=ratios(PERIOD);SEL=new Set(MUS.filter(m=>R[m.id]<.5).sort((a,b)=>R[a.id]-R[b.id]).slice(0,4).map(m=>m.id));SUG=suggest([...SEL]);location.hash='#heute'},
@@ -577,6 +591,7 @@ const A={
   if(d.plan){const pl=P(d.plan);if(pl&&pl.days.length)pl.nx=(d.day+1)%pl.days.length}addSession(s);ex.forEach(e=>{const top=e.sets.reduce((a,b)=>e1(b)>e1(a)||(+b.kg>+a.kg)?b:a);S.weights[e.id]={...(S.weights[e.id]||{}),kg:top.kg,r:top.r,date:d.date}});
   S.draft=null;REST=null;persist('state');toast(`Gespeichert: ${ex.length} Übungen, ${ex.reduce((a,e)=>a+e.sets.length,0)} Sätze`);location.hash='#fortschritt'},
  async discard(){if(await confirmDlg('Training wirklich verwerfen?','Verwerfen')){S.draft=null;REST=null;persist('state');render()}},
+ resetLike(t){delete S.likes[t.dataset.id];persist('state');infoModal(t.dataset.id);toast('Bewertung zurückgesetzt')},
  phChoose(t){phaseModal(t.dataset.k)},
  phSkip(t){const k=t.dataset.k;S.draft[phKey(k)]=null;persist('state');closeModal();render();if(t.dataset.fin)finalModal()},
  phRun(t){const x=S.draft[phKey(t.dataset.k)];if(x.start){x.acc+=Date.now()-x.start;x.start=null}else x.start=Date.now();persist('state');render()},
@@ -601,7 +616,7 @@ const A={
  planAdd(t){const p=P(t.dataset.p),d=p.days[+t.dataset.d],g=GOALS[p.goal]||GOALS.muskel;pickEx(id=>{const x=exById(id);d.items.push({ex:id,sets:x.c?g.cs:g.is,reps:x.c?g.cr:g.ir,rest:x.c?g.rest:Math.round(g.rest*.75)});persist('state');render()})},
  remItem(t){P(t.dataset.p).days[+t.dataset.d].items.splice(+t.dataset.i,1);persist('state');render()},
  swapItem(t){const p=P(t.dataset.p),d=p.days[+t.dataset.d],it=d.items[+t.dataset.i],cur=exById(it.ex);
-  const alts=allEx().filter(x=>x.eq===cur.eq?true:(!p.eq||!p.eq.length||p.eq.includes(x.eq))).filter(x=>x.eq!=='cardio'&&x.p[0]===cur.p[0]&&!excluded(x.id,p)&&!d.items.some(i=>i.ex===x.id));
+  const alts=allEx().filter(x=>x.eq===cur.eq?true:(!p.eq||!p.eq.length||p.eq.includes(x.eq))).filter(x=>x.eq!=='cardio'&&!banned(x.id)&&x.p[0]===cur.p[0]&&!excluded(x.id,p)&&!d.items.some(i=>i.ex===x.id));
   if(!alts.length)return toast('Keine passende Alternative');it.ex=alts[Math.floor(Math.random()*alts.length)].id;persist('state');render();toast('Getauscht: '+exById(it.ex).n)},
  editItem(t){const it=P(t.dataset.p).days[+t.dataset.d].items[+t.dataset.i];
   modal(`${mhead('Sätze & Wiederholungen')}<form id="itf" data-p="${t.dataset.p}" data-d="${t.dataset.d}" data-i="${t.dataset.i}"><div class="g2"><label class="f">Sätze<input type="number" name="sets" min="1" max="10" value="${it.sets}"></label><label class="f">Wiederholungen<input name="reps" value="${esc(it.reps)}"></label></div><label class="f">Pause (Sekunden)<input type="number" name="rest" min="0" step="15" value="${it.rest}"></label><button class="pri wide" style="margin-top:14px">Übernehmen</button></form>`)},
@@ -654,7 +669,9 @@ document.addEventListener('submit',e=>{
  else if(f.id==='itf'){const it=P(f.dataset.p).days[+f.dataset.d].items[+f.dataset.i];it.sets=Math.max(1,+fd.get('sets')||1);it.reps=fd.get('reps')||it.reps;it.rest=+fd.get('rest')||0;persist('state');closeModal();render()}
  else if(f.id==='cex'){S.custom=S.custom||[];S.custom.push({id:'c-'+uid(),n:fd.get('n'),eq:fd.get('eq'),p:[fd.get('p')],s:fd.get('s')?[fd.get('s')]:[],c:fd.get('c')?1:0,how:fd.get('how')||''});persist('state');closeModal();render();toast('Übung angelegt')}
  else if(f.id==='phf'){const k=f.dataset.k,id=fd.get('ph'),min=+fd.get('min')||5;S.draft[phKey(k)]={id,min,acc:0,start:Date.now(),done:false};S.lastPh={...(S.lastPh||{}),[k]:{id,min}};persist('state');closeModal();render();toast((k==='w'?'Warm-up':'Cool-down')+' läuft')}
- else if(f.id==='fin'){closeModal();A.saveDraft(!!fd.get('st'))}
+ else if(f.id==='fin'){const changes=[];for(const [k,v] of fd.entries())if(k.startsWith('rt_')){const id=k.slice(3);rate(id,v);if(v==='dislike'&&banned(id))changes.push(...replaceBanned(id))}
+  closeModal();A.saveDraft(!!fd.get('st'));
+  if(changes.length)setTimeout(()=>modal(`${mhead('Plan angepasst')}<p>Diese Übungen hast du dreimal nicht gemocht. Sie wurden durch gleichwertige ersetzt:</p><ul class="list">${changes.map(c=>`<li><div class="grow"><span class="mut" style="text-decoration:line-through">${esc(exById(c.from).n)}</span> → <b>${esc(exById(c.to).n)}</b><div class="sm mut">${esc(c.plan)} · ${esc(c.day)}</div></div></li>`).join('')}</ul><p class="sm mut">Ersetzte Übungen werden auch nicht mehr vorgeschlagen. Unter „Übungen“ kannst du sie wieder zulassen.</p><button class="pri wide" data-act="close" style="margin-top:12px">Gut</button>`),400)}
  else if(f.id==='goalf'){S.weekGoal=Math.max(1,Math.min(7,+fd.get('g')||2));S.countSports=!!fd.get('cs');persist('state');closeModal();render();toast('Wochenziel gespeichert')}
  else if(f.id==='srv'){SC.url=fd.get('url').trim();SC.key=fd.get('key').trim();saveSC();render();toast('Server gespeichert')}
  else if(f.id==='acc'){const mode=e.submitter&&e.submitter.value||'login',u=fd.get('u').trim().toLowerCase(),pw=fd.get('p');
